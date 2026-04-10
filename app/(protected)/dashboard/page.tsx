@@ -19,85 +19,234 @@ export default async function DashboardPage() {
     take: 5,
   });
 
-  const cards = [
-    { label: "Total solicitudes", value: totalApps, color: "text-blue-400" },
-    { label: "Enviadas", value: sentApps, color: "text-yellow-400" },
-    { label: "Rechazadas", value: rejectedApps, color: "text-red-400" },
-    { label: "Aceptadas", value: acceptedApps, color: "text-green-400" },
+  const stats = [
+    { label: "TOTAL_RECORDS", value: totalApps, color: "text-on-surface" },
+    { label: "ENVIADO", value: sentApps, color: "text-primary-container" },
+    { label: "RECHAZADO", value: rejectedApps, color: "text-error" },
+    { label: "ACEPTADO", value: acceptedApps, color: "text-secondary-fixed-dim" },
   ];
 
   return (
-    <div className="max-w-5xl">
-      <h1 className="text-2xl font-bold text-white mb-1">
-        Hola, {session!.name} 👋
-      </h1>
-      <p className="text-slate-400 mb-8">Aquí tienes un resumen de tu actividad</p>
+    <div className="p-6 space-y-6">
+      {/* Page header */}
+      <header className="border-b border-outline-variant/30 pb-4">
+        <h1 className="font-headline text-3xl font-black tracking-tighter uppercase text-on-background">
+          DASHBOARD_CORE
+        </h1>
+        <p className="font-label text-xs text-primary-container mt-1 tracking-[0.2em]">
+          OPERATOR: {session!.name.toUpperCase()} // STATUS: ONLINE
+        </p>
+      </header>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        {cards.map((c) => (
-          <div key={c.label} className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-            <p className={`text-3xl font-black ${c.color}`}>{c.value}</p>
-            <p className="text-sm text-slate-400 mt-1">{c.label}</p>
-          </div>
-        ))}
-      </div>
+      {/* Stats grid */}
+      <section aria-label="Métricas generales">
+        <div className="grid grid-cols-2 md:grid-cols-4 border border-outline-variant/20">
+          {stats.map((s, i) => (
+            <div
+              key={s.label}
+              className={[
+                "p-5 bg-surface-container-low",
+                i < stats.length - 1 ? "border-r border-outline-variant/20" : "",
+              ].join(" ")}
+            >
+              <div className="font-label text-[10px] text-secondary uppercase opacity-60 mb-1">
+                {s.label}
+              </div>
+              <div className={`font-headline text-3xl font-black ${s.color}`}>{s.value}</div>
+            </div>
+          ))}
+        </div>
+      </section>
 
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-semibold text-white">Solicitudes recientes</h2>
-          <Link href="/applications" className="text-sm text-blue-400 hover:text-blue-300">
-            Ver todas →
+      {/* Quick actions */}
+      <section aria-label="Acciones rápidas">
+        <div className="font-headline text-[10px] font-bold text-outline uppercase tracking-widest opacity-50 mb-3">
+          QUICK_ACCESS
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <Link
+            href="/jobs"
+            className="flex items-center gap-3 p-4 bg-surface-container-low border border-outline-variant/20 hover:border-primary-container/40 transition-colors group"
+          >
+            <span className="material-symbols-outlined text-primary-container" aria-hidden="true">
+              precision_manufacturing
+            </span>
+            <div>
+              <div className="font-headline text-xs font-bold uppercase tracking-tighter group-hover:text-primary-container transition-colors">
+                JOB_DISCOVERY
+              </div>
+              <div className="font-label text-[9px] text-secondary/50 mt-0.5">
+                Search &amp; scrape job listings
+              </div>
+            </div>
+          </Link>
+
+          <Link
+            href="/applications"
+            className="flex items-center gap-3 p-4 bg-surface-container-low border border-outline-variant/20 hover:border-primary-container/40 transition-colors group"
+          >
+            <span className="material-symbols-outlined text-secondary" aria-hidden="true">
+              analytics
+            </span>
+            <div>
+              <div className="font-headline text-xs font-bold uppercase tracking-tighter group-hover:text-primary-container transition-colors">
+                APP_TRACKER
+              </div>
+              <div className="font-label text-[9px] text-secondary/50 mt-0.5">
+                Manage application pipeline
+              </div>
+            </div>
+          </Link>
+
+          <Link
+            href="/profile"
+            className="flex items-center gap-3 p-4 bg-surface-container-low border border-outline-variant/20 hover:border-primary-container/40 transition-colors group"
+          >
+            <span className="material-symbols-outlined text-secondary" aria-hidden="true">
+              person
+            </span>
+            <div>
+              <div className="font-headline text-xs font-bold uppercase tracking-tighter group-hover:text-primary-container transition-colors">
+                OPERATOR_PROFILE
+              </div>
+              <div className="font-label text-[9px] text-secondary/50 mt-0.5">
+                CV, credentials &amp; preferences
+              </div>
+            </div>
           </Link>
         </div>
+      </section>
+
+      {/* Recent applications table */}
+      <section aria-labelledby="recent-title" className="bg-surface-container-low border border-outline-variant/20">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-outline-variant/20 bg-surface-container">
+          <h2
+            id="recent-title"
+            className="font-headline text-xs font-bold text-on-surface uppercase tracking-widest"
+          >
+            RECENT_OPERATIONS
+          </h2>
+          <Link
+            href="/applications"
+            className="font-label text-[10px] text-primary-container hover:text-primary transition-colors uppercase"
+            aria-label="Ver todas las solicitudes"
+          >
+            VIEW_ALL →
+          </Link>
+        </div>
+
         {recentApps.length === 0 ? (
-          <div className="text-center py-8 text-slate-500">
-            <p>Aún no has enviado solicitudes.</p>
-            <Link href="/jobs" className="text-blue-400 hover:text-blue-300 text-sm mt-2 inline-block">
-              Buscar ofertas →
+          <div className="py-12 text-center" role="status">
+            <p className="font-headline text-sm text-secondary/30 uppercase tracking-widest">
+              NO_RECORDS_FOUND
+            </p>
+            <Link
+              href="/jobs"
+              className="inline-block mt-3 font-label text-xs text-primary-container hover:text-primary transition-colors uppercase"
+            >
+              INITIATE_FIRST_SCRAPE →
             </Link>
           </div>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-slate-500 text-xs border-b border-slate-800">
-                <th className="text-left pb-2">Empresa</th>
-                <th className="text-left pb-2">Puesto</th>
-                <th className="text-left pb-2">Plataforma</th>
-                <th className="text-left pb-2">Estado</th>
-                <th className="text-left pb-2">Fecha</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentApps.map((app) => (
-                <tr key={app.id} className="border-b border-slate-800/50 hover:bg-slate-800/30">
-                  <td className="py-2.5 font-medium text-white">{app.company}</td>
-                  <td className="py-2.5 text-slate-300">{app.position}</td>
-                  <td className="py-2.5 text-slate-400 capitalize">{app.platform}</td>
-                  <td className="py-2.5">
-                    <StatusBadge status={app.status} />
-                  </td>
-                  <td className="py-2.5 text-slate-500 text-xs">
-                    {new Date(app.appliedAt).toLocaleDateString("es-ES")}
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-outline-variant/10">
+                  <th
+                    scope="col"
+                    className="px-5 py-2 text-left font-label text-[10px] font-bold text-outline uppercase tracking-widest border-r border-outline-variant/10"
+                  >
+                    COMPANY
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-5 py-2 text-left font-label text-[10px] font-bold text-outline uppercase tracking-widest border-r border-outline-variant/10"
+                  >
+                    POSITION
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-5 py-2 text-left font-label text-[10px] font-bold text-outline uppercase tracking-widest border-r border-outline-variant/10 w-24"
+                  >
+                    PLATFORM
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-5 py-2 text-left font-label text-[10px] font-bold text-outline uppercase tracking-widest border-r border-outline-variant/10 w-28"
+                  >
+                    STATUS
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-5 py-2 text-left font-label text-[10px] font-bold text-outline uppercase tracking-widest w-28"
+                  >
+                    DATE
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="font-label text-xs">
+                {recentApps.map((app) => (
+                  <tr
+                    key={app.id}
+                    className="border-b border-outline-variant/10 hover:bg-surface-container transition-colors"
+                  >
+                    <td className="px-5 py-2.5 border-r border-outline-variant/10 font-medium text-on-surface uppercase tracking-tight">
+                      {app.company}
+                    </td>
+                    <td className="px-5 py-2.5 border-r border-outline-variant/10 text-secondary">
+                      {app.position}
+                    </td>
+                    <td className="px-5 py-2.5 border-r border-outline-variant/10">
+                      <span className="font-label text-[9px] bg-surface-container-highest border border-outline-variant/30 px-2 py-0.5 uppercase text-secondary">
+                        {app.platform.toUpperCase()}
+                      </span>
+                    </td>
+                    <td className="px-5 py-2.5 border-r border-outline-variant/10">
+                      <StatusBadge status={app.status} />
+                    </td>
+                    <td className="px-5 py-2.5 text-secondary/50">
+                      <time dateTime={app.appliedAt.toString()}>
+                        {new Date(app.appliedAt).toLocaleDateString("es-ES")}
+                      </time>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
-      </div>
+      </section>
+
+      {/* System status footer */}
+      <footer
+        className="border border-outline-variant/20 bg-surface-container-lowest p-3 flex justify-between items-center"
+        aria-label="Estado del sistema"
+      >
+        <span className="font-label text-[8px] text-secondary/40 uppercase tracking-[0.2em]">
+          LINKEDOUT_CORE_OS // DASHBOARD_ENGINE // BUILD_ID: 4.0.ALPHA
+        </span>
+        <div className="flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 bg-primary-container rounded-full animate-pulse" aria-hidden="true" />
+          <span className="font-label text-[8px] text-primary-container uppercase">SYS_ONLINE</span>
+        </div>
+      </footer>
     </div>
   );
 }
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, string> = {
-    enviado: "bg-yellow-900 text-yellow-300 border-yellow-700",
-    rechazado: "bg-red-950 text-red-300 border-red-800",
-    aceptado: "bg-green-950 text-green-300 border-green-800",
+    enviado: "bg-primary-container/20 text-primary-container border-primary-container/50",
+    rechazado: "bg-error-container/20 text-error border-error-container/50",
+    aceptado: "bg-secondary-container/40 text-secondary-fixed-dim border-outline-variant/40",
   };
   return (
-    <span className={`text-xs border rounded-full px-2 py-0.5 ${map[status] ?? "bg-slate-800 text-slate-400"}`}>
-      {status}
+    <span
+      className={`font-label text-[9px] font-bold border px-2 py-0.5 uppercase ${
+        map[status] ?? "bg-surface-container text-secondary border-outline-variant/30"
+      }`}
+    >
+      {status.toUpperCase()}
     </span>
   );
 }

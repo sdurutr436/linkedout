@@ -3,10 +3,10 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 const NAV_LINKS = [
-  { href: "/dashboard", label: "Dashboard", icon: "◈" },
-  { href: "/jobs", label: "Ofertas", icon: "⚲" },
-  { href: "/applications", label: "Solicitudes", icon: "⊞" },
-  { href: "/profile", label: "Perfil", icon: "⊙" },
+  { href: "/dashboard", label: "DASHBOARD", icon: "dashboard" },
+  { href: "/jobs", label: "JOB_DISCOVERY", icon: "precision_manufacturing" },
+  { href: "/applications", label: "APP_TRACKER", icon: "analytics" },
+  { href: "/profile", label: "OPERATOR_PROFILE", icon: "person" },
 ];
 
 export default function Navbar({ user }: { user: { name: string; email: string } }) {
@@ -20,46 +20,93 @@ export default function Navbar({ user }: { user: { name: string; email: string }
   }
 
   return (
-    <aside className="fixed left-0 top-0 h-full w-64 bg-slate-900 border-r border-slate-800 flex flex-col z-50">
-      <div className="p-6 border-b border-slate-800">
-        <div className="flex items-baseline gap-1">
-          <span className="text-xl font-black text-blue-500">Linked</span>
-          <span className="text-xl font-black text-white">Out</span>
+    <aside
+      aria-label="Navegación principal"
+      className="fixed left-0 top-0 h-full w-64 bg-surface-container-low border-r border-outline-variant/20 flex flex-col z-50"
+    >
+      {/* Logo */}
+      <div className="p-4 border-b border-outline-variant/20 bg-surface-container-lowest">
+        <div className="font-headline text-lg font-black text-primary-container tracking-widest">
+          LINKEDOUT_CORE
         </div>
-        <p className="text-xs text-slate-500 mt-1">Automatización de empleo</p>
+        <div className="mt-4 flex items-center gap-3">
+          <div
+            className="w-10 h-10 bg-surface-container-high border border-outline-variant/30 flex items-center justify-center"
+            aria-hidden="true"
+          >
+            <span className="material-symbols-outlined text-primary-container">engineering</span>
+          </div>
+          <div>
+            <p className="font-headline text-xs font-black text-primary-container leading-none uppercase truncate max-w-[140px]">
+              {user.name}
+            </p>
+            <p className="font-label text-[10px] text-secondary opacity-60 mt-0.5 truncate max-w-[140px]">
+              {user.email}
+            </p>
+          </div>
+        </div>
       </div>
 
-      <nav className="flex-1 p-4 flex flex-col gap-1">
-        {NAV_LINKS.map((link) => {
-          const active = pathname === link.href || pathname.startsWith(link.href + "/");
-          return (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                active
-                  ? "bg-blue-600 text-white"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800"
-              }`}
-            >
-              <span className="text-base">{link.icon}</span>
-              {link.label}
-            </Link>
-          );
-        })}
+      {/* Navigation */}
+      <nav aria-label="Secciones de la aplicación" className="flex-1 py-4 overflow-y-auto">
+        <div className="px-4 mb-2">
+          <span className="font-label text-[10px] text-outline tracking-[0.2em] font-bold opacity-50 uppercase">
+            Core Console
+          </span>
+        </div>
+        <ul role="list" className="flex flex-col gap-0.5 px-2">
+          {NAV_LINKS.map((link) => {
+            const active = pathname === link.href || pathname.startsWith(link.href + "/");
+            return (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  aria-current={active ? "page" : undefined}
+                  className={[
+                    "flex items-center gap-3 px-3 py-3 font-headline text-xs font-medium uppercase transition-all duration-75",
+                    active
+                      ? "bg-surface-container-high text-primary-container border-l-4 border-primary-container"
+                      : "text-secondary opacity-70 hover:bg-surface-container-high hover:opacity-100 border-l-4 border-transparent",
+                  ].join(" ")}
+                >
+                  <span className="material-symbols-outlined" aria-hidden="true">
+                    {link.icon}
+                  </span>
+                  {link.label}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       </nav>
 
-      <div className="p-4 border-t border-slate-800">
-        <div className="mb-3 px-3">
-          <p className="text-sm font-medium text-white truncate">{user.name}</p>
-          <p className="text-xs text-slate-500 truncate">{user.email}</p>
-        </div>
+      {/* Initiate Scrape CTA */}
+      <div className="px-4 pb-2">
+        <Link
+          href="/jobs"
+          className="block w-full py-3 bg-surface-container-high border border-primary-container/30 text-primary-container font-headline text-xs font-bold uppercase tracking-widest text-center hover:bg-primary-container hover:text-on-primary transition-all duration-75"
+        >
+          INITIATE_SCRAPE
+        </Link>
+      </div>
+
+      {/* Footer links + logout */}
+      <div className="border-t border-outline-variant/20 p-2 flex flex-col gap-0.5 bg-surface-container-lowest">
         <button
           onClick={handleLogout}
-          className="w-full text-left px-3 py-2 text-sm text-slate-400 hover:text-red-400 hover:bg-red-950 rounded-lg transition-colors"
+          className="flex items-center gap-3 px-4 py-2 text-secondary opacity-60 hover:bg-surface-container hover:opacity-100 font-headline text-[10px] uppercase transition-all w-full text-left"
+          aria-label="Cerrar sesión"
         >
-          Cerrar sesión
+          <span className="material-symbols-outlined text-xs" aria-hidden="true">logout</span>
+          FORCE_SHUTDOWN
         </button>
+        <div
+          className="flex items-center gap-3 px-4 py-2 text-secondary opacity-40 font-headline text-[10px] uppercase"
+          aria-label="Estado del sistema"
+        >
+          <span className="w-1.5 h-1.5 bg-primary-container rounded-full animate-pulse" aria-hidden="true" />
+          SYS_ONLINE
+        </div>
       </div>
     </aside>
   );
