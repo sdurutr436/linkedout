@@ -1,0 +1,43 @@
+name: Feature Request
+description: Suggest a new feature or improvement
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: "Thanks for suggesting a feature!"
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or motivation
+      description: Describe the problem this feature would solve.
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: Describe the feature you'd like to see implemented.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any alternative solutions or workarounds you've considered.
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Feature scope
+      options:
+        - Scraper (LinkedIn / Infojobs)
+        - CV Optimizer
+        - Applications tracking
+        - Authentication
+        - Docker / deployment
+        - Other
+    validations:
+      required: true
