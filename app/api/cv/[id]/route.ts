@@ -12,7 +12,7 @@ export const GET = handle(async (request: NextRequest, context: unknown) => {
 
   if (searchParams.get("format") === "pdf") {
     const { buffer, filename } = await CVService.getPdf(session.sub, id);
-    return new Response(buffer, {
+    return new Response(new Uint8Array(buffer), {
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="${filename}"`,

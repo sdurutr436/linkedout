@@ -25,8 +25,8 @@ export function handle(fn: RouteHandler): RouteHandler {
       const ms = Date.now() - start;
 
       if (err instanceof ZodError) {
-        const message = err.errors.map((e) => `${e.path.join(".")}: ${e.message}`).join("; ");
-        logger.warn({ method, url, ms, issues: err.errors }, "validation error");
+        const message = err.issues.map((e) => `${e.path.join(".")}: ${e.message}`).join("; ");
+        logger.warn({ method, url, ms, issues: err.issues }, "validation error");
         return Response.json({ error: message, code: "VALIDATION_ERROR" }, { status: 400 });
       }
 
