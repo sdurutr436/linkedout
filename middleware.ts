@@ -25,6 +25,10 @@ function checkRateLimit(ip: string): boolean {
   const entry = rateLimitMap.get(ip);
 
   if (!entry || now > entry.resetAt) {
+    // Evict all expired entries when creating a new slot to bound map size
+    for (const [key, val] of rateLimitMap) {
+      if (now > val.resetAt) rateLimitMap.delete(key);
+    }
     rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
     return true;
   }
@@ -36,7 +40,7 @@ function checkRateLimit(ip: string): boolean {
 }
 
 // Security headers applied to every response
-function applySecurityHeaders(response: NextResponse): NextResponse {
+function applySecurityHeaders(response: NextResponse, requestOrigin?: string | null): NextResponse {
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("X-Frame-Options", "DENY");
   response.headers.set("X-XSS-Protection", "1; mode=block");
@@ -55,10 +59,9 @@ function applySecurityHeaders(response: NextResponse): NextResponse {
   );
 
   // CORS for API routes: restrict to same origin
-  const origin = response.headers.get("Origin");
   const allowedOrigin = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-  if (origin && origin === allowedOrigin) {
-    response.headers.set("Access-Control-Allow-Origin", origin);
+  if (requestOrigin && requestOrigin === allowedOrigin) {
+    response.headers.set("Access-Control-Allow-Origin", requestOrigin);
     response.headers.set("Access-Control-Allow-Credentials", "true");
     response.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
     response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
@@ -69,34 +72,37 @@ function applySecurityHeaders(response: NextResponse): NextResponse {
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const origin = request.headers.get("Origin");
 
   // Rate limiting on API routes
   if (pathname.startsWith("/api/")) {
     const ip = getClientIp(request);
     if (!checkRateLimit(ip)) {
       return applySecurityHeaders(
-        new NextResponse("Too Many Requests", { status: 429 })
+        new NextResponse("Too Many Requests", { status: 429 }),
+        origin
       );
     }
   }
 
   // CORS preflight
   if (request.method === "OPTIONS") {
-    return applySecurityHeaders(new NextResponse(null, { status: 204 }));
+    return applySecurityHeaders(new NextResponse(null, { status: 204 }), origin);
   }
 
   const isPublic = PUBLIC_PATHS.some(
     (p) => pathname === p || pathname.startsWith(p + "/")
   );
   if (isPublic) {
-    return applySecurityHeaders(NextResponse.next());
+    return applySecurityHeaders(NextResponse.next(), origin);
   }
 
   const token = request.cookies.get("linkedout_token")?.value;
   if (!token) {
     if (pathname.startsWith("/api/")) {
       return applySecurityHeaders(
-        Response.json({ error: "Unauthorized" }, { status: 401 }) as NextResponse
+        Response.json({ error: "Unauthorized" }, { status: 401 }) as NextResponse,
+        origin
       );
     }
     return NextResponse.redirect(new URL("/login", request.url));
@@ -104,11 +110,12 @@ export async function middleware(request: NextRequest) {
 
   try {
     await jwtVerify(token, secret);
-    return applySecurityHeaders(NextResponse.next());
+    return applySecurityHeaders(NextResponse.next(), origin);
   } catch {
     if (pathname.startsWith("/api/")) {
       return applySecurityHeaders(
-        Response.json({ error: "Unauthorized" }, { status: 401 }) as NextResponse
+        Response.json({ error: "Unauthorized" }, { status: 401 }) as NextResponse,
+        origin
       );
     }
     return NextResponse.redirect(new URL("/login", request.url));

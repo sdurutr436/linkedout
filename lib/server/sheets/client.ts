@@ -1,17 +1,20 @@
 import { google } from "googleapis";
 
+let _auth: InstanceType<typeof google.auth.JWT> | null | undefined;
 function getAuth() {
+  if (_auth !== undefined) return _auth;
+
   const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
   const key = process.env.GOOGLE_SERVICE_ACCOUNT_KEY?.replace(/\\n/g, "\n");
 
-  if (!email || !key) return null;
+  _auth = email && key
+    ? new google.auth.JWT({ email, key, scopes: ["https://www.googleapis.com/auth/spreadsheets"] })
+    : null;
 
-  return new google.auth.JWT({
-    email,
-    key,
-    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-  });
+  return _auth;
 }
+
+let _headersEnsured = false;
 
 export interface SheetRow {
   company: string;
@@ -64,7 +67,10 @@ export async function appendRow(spreadsheetId: string, row: SheetRow): Promise<v
 
   const sheets = google.sheets({ version: "v4", auth });
 
-  await ensureHeaders(spreadsheetId);
+  if (!_headersEnsured) {
+    await ensureHeaders(spreadsheetId);
+    _headersEnsured = true;
+  }
 
   await sheets.spreadsheets.values.append({
     spreadsheetId,
