@@ -4,11 +4,30 @@ import { launchBrowser } from "./browser";
 import logger from "../logger";
 
 async function login(page: Page, credentials: ScraperCredentials): Promise<void> {
-  await page.goto("https://www.linkedin.com/login", { waitUntil: "networkidle" });
-  await page.fill("#username", credentials.email);
-  await page.fill("#password", credentials.password);
-  await page.click('[data-litms-control-urn="login-submit"]');
-  await page.waitForURL("**/feed/**", { timeout: 15000 });
+  await page.goto("https://www.linkedin.com/login", { waitUntil: "domcontentloaded" });
+  await page.waitForSelector("#username", { timeout: 10000 });
+
+  // Type credentials with human-like delays to avoid keystroke-timing detection
+  await page.locator("#username").pressSequentially(credentials.email, { delay: 80 });
+  await page.waitForTimeout(400 + Math.random() * 300);
+  await page.locator("#password").pressSequentially(credentials.password, { delay: 80 });
+  await page.waitForTimeout(300 + Math.random() * 200);
+
+  // Try the standard submit button; fall back to button[type=submit] if selector changed
+  const submitBtn = page.locator('[data-litms-control-urn="login-submit"], button[type="submit"]').first();
+  await submitBtn.click();
+
+  // Wait for navigation away from the login page
+  await page.waitForURL((url) => !url.pathname.startsWith("/login"), { timeout: 20000 });
+
+  const pathname = new URL(page.url()).pathname;
+
+  if (pathname.startsWith("/checkpoint") || pathname.startsWith("/uas/")) {
+    throw new Error("LinkedIn requires verification (CAPTCHA or 2FA). Log in manually first to clear the challenge.");
+  }
+  if (!pathname.startsWith("/feed")) {
+    throw new Error(`LinkedIn login failed — landed on unexpected page: ${pathname}`);
+  }
 }
 
 async function searchJobs(page: Page, params: SearchParams): Promise<JobListing[]> {
@@ -78,7 +97,7 @@ class LinkedInScraper implements JobScraper {
     }
   }
 
-  async apply(jobUrl: string, credentials: ScraperCredentials, cvPdfPath: string): Promise<boolean> {
+  async apply(jobUrl: string, credentials: ScraperCredentials, _cvPdfPath: string): Promise<boolean> {
     const { browser, context } = await launchBrowser(false);
     const page = await context.newPage();
 
