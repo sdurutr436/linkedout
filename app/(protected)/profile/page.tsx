@@ -1,6 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import dynamic from "next/dynamic";
+
+const KeywordsSelect = dynamic(() => import("@/app/components/KeywordsSelect"), { ssr: false });
 
 interface Preferences {
   keywords: string;
@@ -230,11 +233,10 @@ export default function ProfilePage() {
         <div className="flex flex-col gap-5">
           <div>
             <label className="block text-sm text-slate-400 mb-1">Palabras clave</label>
-            <input
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
-              placeholder="React, TypeScript, Node.js..."
+            <KeywordsSelect
               value={form.preferences.keywords}
-              onChange={(e) => setForm({ ...form, preferences: { ...form.preferences, keywords: e.target.value } })}
+              onChange={(v) => setForm({ ...form, preferences: { ...form.preferences, keywords: v } })}
+              placeholder="Añadir palabras clave..."
             />
           </div>
           <div>
