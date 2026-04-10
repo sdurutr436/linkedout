@@ -60,7 +60,7 @@ export default function KeywordsSelect({ value, onChange, placeholder = "Añadir
         itemSelectText: "",
         classNames: {
           containerOuter: ["choices", "choices--custom"],
-        },
+        } as import("choices.js").ClassNames,
       });
 
       choicesRef.current = instance;
