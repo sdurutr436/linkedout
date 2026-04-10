@@ -17,7 +17,7 @@
     "@prisma/adapter-libsql": "^7.7.0",
     "@prisma/client": "^7.7.0",
     "@types/bcryptjs": "^2.4.6",
-    "@types/marked": "^5.0.2",
+    "@types/marked": "^6.0.0",
     "@types/pino": "^7.0.4",
     "bcryptjs": "^3.0.3",
     "choices.js": "^11.2.1",
