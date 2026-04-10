@@ -18,7 +18,6 @@ export const ProfileService = {
       linkedinEmail: input.linkedinEmail,
       linkedinPassword: input.linkedinPassword,
       infojobsEmail: input.infojobsEmail,
-      infojobsPassword: input.infojobsPassword,
       preferences: input.preferences ? JSON.stringify(input.preferences) : undefined,
     };
 
@@ -29,10 +28,18 @@ export const ProfileService = {
     });
   },
 
-  /** Retrieve profile and throw if not found (used by services that require it). */
+  async saveInfojobsToken(userId: string, accessToken: string, expiresAt: Date) {
+    return prisma.profile.upsert({
+      where: { userId },
+      update: { infojobsToken: accessToken, infojobsTokenExpiry: expiresAt },
+      create: { userId, infojobsToken: accessToken, infojobsTokenExpiry: expiresAt },
+    });
+  },
+
   async getOrThrow(userId: string) {
     const profile = await prisma.profile.findUnique({ where: { userId } });
     if (!profile) throw new NotFoundError("Profile");
     return profile;
   },
+
 };
