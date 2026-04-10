@@ -1,0 +1,31 @@
+services:
+  linkedout:
+    build: .
+    image: linkedout:latest
+    container_name: linkedout
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - linkedout_data:/data
+      - linkedout_uploads:/app/uploads
+    environment:
+      DATABASE_URL: "file:/data/dev.db"
+      JWT_SECRET: "${JWT_SECRET}"
+      ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY}"
+      GOOGLE_SERVICE_ACCOUNT_EMAIL: "${GOOGLE_SERVICE_ACCOUNT_EMAIL}"
+      GOOGLE_SERVICE_ACCOUNT_KEY: "${GOOGLE_SERVICE_ACCOUNT_KEY}"
+      GOOGLE_SHEETS_ID: "${GOOGLE_SHEETS_ID}"
+      NEXT_PUBLIC_APP_URL: "${NEXT_PUBLIC_APP_URL:-http://localhost:3000}"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/auth/me"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  linkedout_data:
+    driver: local
+  linkedout_uploads:
+    driver: local

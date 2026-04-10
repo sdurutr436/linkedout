@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  password     String
+  name         String
+  profile      Profile?
+  applications Application[]
+  optimizedCVs OptimizedCV[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Profile {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cvContent        String?
+  cvFileName       String?
+  titulaciones     String?
+  experiencia      String?
+  linkedinEmail    String?
+  linkedinPassword String?
+  linkedinCookies  String?
+  infojobsEmail    String?
+  infojobsPassword String?
+  preferences      String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Application {
+  id             String       @id @default(cuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company        String
+  position       String
+  platform       String
+  jobUrl         String
+  jobId          String?
+  salary         String?
+  contactPerson  String?
+  companySummary String?
+  optimizedCVId  String?
+  optimizedCV    OptimizedCV? @relation(fields: [optimizedCVId], references: [id])
+  status         String       @default("enviado")
+  appliedAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model OptimizedCV {
+  id           String        @id @default(cuid())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobTitle     String
+  company      String
+  content      String
+  applications Application[]
+  createdAt    DateTime      @default(now())
+}

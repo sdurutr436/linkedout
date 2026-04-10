@@ -1,0 +1,51 @@
+name: Security Scan (Trivy)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * 1" # Every Monday at 06:00 UTC
+
+jobs:
+  trivy-fs:
+    name: Trivy filesystem scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Trivy (filesystem)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: "fs"
+          scan-ref: "."
+          format: "sarif"
+          output: "trivy-results.sarif"
+          severity: "CRITICAL,HIGH"
+          exit-code: "1"
+
+      - name: Upload SARIF to GitHub Security tab
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: "trivy-results.sarif"
+
+  trivy-image:
+    name: Trivy Docker image scan
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image for scanning
+        run: docker build -t linkedout:scan .
+
+      - name: Run Trivy (image)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: "image"
+          image-ref: "linkedout:scan"
+          format: "table"
+          severity: "CRITICAL,HIGH"
+          exit-code: "1"
