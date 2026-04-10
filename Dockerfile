@@ -76,9 +76,9 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/app/generated ./app/generated
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
-COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder /app/node_modules/@libsql ./node_modules/@libsql
+# Copy full node_modules from builder so prisma CLI has its complete dependency
+# tree at migration time (effect, c12, deepmerge-ts, empathic, mysql2, postgres…)
+COPY --from=builder /app/node_modules ./node_modules
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
