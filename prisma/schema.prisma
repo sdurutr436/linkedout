@@ -30,8 +30,9 @@ model Profile {
   linkedinEmail    String?
   linkedinPassword String?
   linkedinCookies  String?
-  infojobsEmail    String?
-  infojobsPassword String?
+  infojobsEmail        String?
+  infojobsToken        String?
+  infojobsTokenExpiry  DateTime?
   preferences      String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt

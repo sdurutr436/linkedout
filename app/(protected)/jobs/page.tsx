@@ -1,6 +1,9 @@
 "use client";
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import type { JobListing } from "@/lib/scrapers/types";
+
+const KeywordsSelect = dynamic(() => import("@/app/components/KeywordsSelect"), { ssr: false });
 
 export default function JobsPage() {
   const [platform, setPlatform] = useState<"linkedin" | "infojobs">("linkedin");
@@ -101,13 +104,13 @@ export default function JobsPage() {
             </button>
           ))}
         </div>
-        <input
-          className="flex-1 min-w-48 bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500"
-          placeholder="Palabras clave (React, Python...)"
-          value={keywords}
-          onChange={(e) => setKeywords(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-        />
+        <div className="flex-1 min-w-48">
+          <KeywordsSelect
+            value={keywords}
+            onChange={setKeywords}
+            placeholder="Palabras clave..."
+          />
+        </div>
         <input
           className="flex-1 min-w-32 bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500"
           placeholder="Ubicación"

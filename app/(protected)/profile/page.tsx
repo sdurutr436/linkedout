@@ -1,5 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import dynamic from "next/dynamic";
+
+const KeywordsSelect = dynamic(() => import("@/app/components/KeywordsSelect"), { ssr: false });
 
 interface Preferences {
   keywords: string;
@@ -16,7 +20,7 @@ interface ProfileData {
   linkedinEmail: string;
   linkedinPassword: string;
   infojobsEmail: string;
-  infojobsPassword: string;
+  infojobsConnected: boolean;
   preferences: Preferences;
 }
 
@@ -28,6 +32,7 @@ const defaultPreferences: Preferences = {
 };
 
 export default function ProfilePage() {
+  const searchParams = useSearchParams();
   const [form, setForm] = useState<ProfileData>({
     cvContent: "",
     cvFileName: "",
@@ -36,7 +41,7 @@ export default function ProfilePage() {
     linkedinEmail: "",
     linkedinPassword: "",
     infojobsEmail: "",
-    infojobsPassword: "",
+    infojobsConnected: false,
     preferences: defaultPreferences,
   });
   const [saving, setSaving] = useState(false);
@@ -56,7 +61,7 @@ export default function ProfilePage() {
           linkedinEmail: profile.linkedinEmail ?? "",
           linkedinPassword: profile.linkedinPassword ?? "",
           infojobsEmail: profile.infojobsEmail ?? "",
-          infojobsPassword: profile.infojobsPassword ?? "",
+          infojobsConnected: !!profile.infojobsToken,
           preferences: profile.preferences ? JSON.parse(profile.preferences) : defaultPreferences,
         });
       });
@@ -78,10 +83,11 @@ export default function ProfilePage() {
 
   async function handleSave() {
     setSaving(true);
+    const { infojobsConnected, ...payload } = form;
     await fetch("/api/profile", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify(payload),
     });
     setSaving(false);
     setSaved(true);
@@ -190,7 +196,7 @@ export default function ProfilePage() {
             </h3>
             <div className="flex flex-col gap-3">
               <div>
-                <label className="block text-sm text-slate-400 mb-1">Email</label>
+                <label className="block text-sm text-slate-400 mb-1">Email (opcional, para referencia)</label>
                 <input
                   type="email"
                   className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
@@ -199,21 +205,26 @@ export default function ProfilePage() {
                   placeholder="tu@email.com"
                 />
               </div>
-              <div>
-                <label className="block text-sm text-slate-400 mb-1">Contraseña</label>
-                <input
-                  type="password"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
-                  value={form.infojobsPassword}
-                  onChange={(e) => setForm({ ...form, infojobsPassword: e.target.value })}
-                  placeholder="••••••••"
-                />
+              <div className="flex items-center justify-between">
+                {form.infojobsConnected || searchParams.get("infojobs") === "connected" ? (
+                  <span className="text-sm text-green-400 flex items-center gap-1.5">
+                    <span className="w-2 h-2 bg-green-400 rounded-full inline-block"></span>
+                    Conectado con Infojobs
+                  </span>
+                ) : (
+                  <a
+                    href="/api/auth/infojobs"
+                    className="bg-orange-600 hover:bg-orange-500 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors"
+                  >
+                    Conectar con Infojobs
+                  </a>
+                )}
               </div>
             </div>
           </div>
 
           <p className="text-xs text-slate-500">
-            Las credenciales se almacenan localmente en tu base de datos y solo se usan para automatizar el inicio de sesión.
+            Infojobs usa su API oficial (OAuth). Las credenciales de LinkedIn se usan para automatizar el scraping de búsqueda, ya que LinkedIn no ofrece API pública de empleo.
           </p>
         </div>
       )}
@@ -222,11 +233,10 @@ export default function ProfilePage() {
         <div className="flex flex-col gap-5">
           <div>
             <label className="block text-sm text-slate-400 mb-1">Palabras clave</label>
-            <input
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
-              placeholder="React, TypeScript, Node.js..."
+            <KeywordsSelect
               value={form.preferences.keywords}
-              onChange={(e) => setForm({ ...form, preferences: { ...form.preferences, keywords: e.target.value } })}
+              onChange={(v) => setForm({ ...form, preferences: { ...form.preferences, keywords: v } })}
+              placeholder="Añadir palabras clave..."
             />
           </div>
           <div>

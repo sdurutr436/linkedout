@@ -1,5 +1,5 @@
 import { linkedInScraper } from "../scrapers/linkedin";
-import { infojobsScraper } from "../scrapers/infojobs";
+import { searchJobs as infojobsSearch } from "../infojobs/client";
 import { ValidationError, ExternalServiceError } from "../errors";
 import { ProfileService } from "./profile.service";
 import logger from "../logger";
@@ -18,24 +18,21 @@ export const JobsService = {
     };
 
     if (input.platform === "infojobs") {
-      if (!profile.infojobsEmail || !profile.infojobsPassword) {
-        throw new ValidationError("Configure your Infojobs credentials in your profile first");
+      if (!process.env.INFOJOBS_CLIENT_ID || !process.env.INFOJOBS_CLIENT_SECRET) {
+        throw new ValidationError("Infojobs API credentials are not configured on the server");
       }
 
       logger.info({ platform: "infojobs", keywords: params.keywords }, "starting job search");
 
       try {
-        return await infojobsScraper.search(params, {
-          email: profile.infojobsEmail,
-          password: profile.infojobsPassword,
-        });
+        return await infojobsSearch(params);
       } catch (err) {
-        logger.error({ err, platform: "infojobs" }, "scraper error");
-        throw new ExternalServiceError("Infojobs", "Failed to retrieve job listings. Check your credentials.");
+        logger.error({ err, platform: "infojobs" }, "infojobs api error");
+        throw new ExternalServiceError("Infojobs", "Failed to retrieve job listings");
       }
     }
 
-    // Default: LinkedIn
+    // LinkedIn — no public search API; Playwright scraper with stored credentials
     if (!profile.linkedinEmail || !profile.linkedinPassword) {
       throw new ValidationError("Configure your LinkedIn credentials in your profile first");
     }

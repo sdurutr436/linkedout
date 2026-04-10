@@ -30,7 +30,6 @@ export const updateProfileSchema = z.object({
   linkedinEmail: z.string().email().optional().or(z.literal("")),
   linkedinPassword: z.string().optional(),
   infojobsEmail: z.string().email().optional().or(z.literal("")),
-  infojobsPassword: z.string().optional(),
   preferences: preferencesSchema.optional(),
 });
 
