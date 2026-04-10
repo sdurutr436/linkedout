@@ -16,8 +16,25 @@ RUN npm ci --omit=dev --ignore-scripts
 RUN npx playwright install chromium --with-deps
 
 # ─── Stage 2: builder ─────────────────────────────────────────────────────────
-FROM deps AS builder
+FROM node:22-slim AS builder
 WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openssl ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY package*.json ./
+COPY prisma ./prisma/
+COPY prisma.config.ts ./
+
+# Full install (including dev deps) with scripts so native binaries are downloaded
+RUN npm ci
+# package-lock.json generated on Windows doesn't include linux native binaries for lightningcss;
+# install it explicitly so Tailwind/PostCSS can compile CSS on linux/x64
+RUN npm install --no-save lightningcss-linux-x64-gnu
+
+# Reuse Playwright browsers from deps stage instead of re-downloading
+COPY --from=deps /root/.cache/ms-playwright /root/.cache/ms-playwright
 
 COPY . .
 
@@ -49,19 +66,19 @@ ENV DATABASE_URL="file:/data/dev.db"
 # Create volume mount point
 RUN mkdir -p /data /app/uploads
 
-# Copy playwright browsers from builder
-COPY --from=builder /root/.cache/ms-playwright /root/.cache/ms-playwright
+# Copy playwright browsers from deps stage
+COPY --from=deps /root/.cache/ms-playwright /root/.cache/ms-playwright
 
 # Copy built app
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/app/generated ./app/generated
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder /app/node_modules/@libsql ./node_modules/@libsql
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
