@@ -1,36 +1,141 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LinkedOut
 
-## Getting Started
+> Automate your job search on LinkedIn and Infojobs — AI-powered CV optimization, one-click applications, and a full tracking dashboard.
 
-First, run the development server:
+[![CI](https://github.com/sdurutr436/linkedout/actions/workflows/ci.yml/badge.svg)](https://github.com/sdurutr436/linkedout/actions/workflows/ci.yml)
+[![Docker](https://github.com/sdurutr436/linkedout/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/sdurutr436/linkedout/actions/workflows/docker-publish.yml)
+[![Security Scan](https://github.com/sdurutr436/linkedout/actions/workflows/trivy.yml/badge.svg)](https://github.com/sdurutr436/linkedout/actions/workflows/trivy.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+---
+
+## Features
+
+| Feature | Description |
+|---------|-------------|
+| 🔐 **Auth** | JWT-based login with bcrypt passwords and `HttpOnly` session cookies |
+| 📄 **Profile** | Upload your CV, titulaciones, and work experience |
+| 🔍 **Job Search** | Scrape LinkedIn and Infojobs based on your preferences |
+| 🤖 **CV Optimizer** | Claude AI generates a tailored Markdown CV per job offer |
+| 📥 **Download** | Export the optimized CV as `.md` or PDF |
+| 📨 **Apply** | LinkedIn Easy Apply automation (skips external portals) |
+| 📊 **Applications** | Full CRUD table with status tracking (sent / rejected / accepted) |
+| 📑 **Google Sheets** | Auto-sync every application to a shared spreadsheet |
+| 🐳 **Docker** | One-command deploy with persistent data volumes |
+| 🛡️ **Security** | Security headers, CORS, rate limiting, Trivy scanning |
+
+---
+
+## Tech Stack
+
+- **Framework**: [Next.js 16](https://nextjs.org) (App Router, TypeScript)
+- **Database**: SQLite via [Prisma 7](https://prisma.io)
+- **Auth**: [jose](https://github.com/panva/jose) JWT + bcryptjs
+- **AI**: [Anthropic Claude](https://anthropic.com) (`claude-opus-4-6`)
+- **Browser automation**: [Playwright](https://playwright.dev) (scraping + PDF)
+- **Sheets**: [googleapis](https://github.com/googleapis/google-api-nodejs-client)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com)
+- **Logging**: [Pino](https://getpino.io)
+- **Tests**: [Vitest](https://vitest.dev)
+
+---
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js 22+
+- Anthropic API key (for CV optimization)
+- Google service account JSON (optional, for Sheets sync)
+
+### Local development
 
 ```bash
+# 1. Clone
+git clone https://github.com/sdurutr436/linkedout.git
+cd linkedout
+
+# 2. Install dependencies
+npm install
+
+# 3. Configure environment
+cp .env.example .env
+# Edit .env with your values
+
+# 4. Set up database
+mkdir -p data
+npx prisma migrate dev
+
+# 5. Start dev server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) and register your account.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Docker
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# Copy and fill environment variables
+cp .env.example .env
 
-## Learn More
+# Build and start
+docker compose up -d
 
-To learn more about Next.js, take a look at the following resources:
+# View logs
+docker compose logs -f linkedout
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Data is persisted in named Docker volumes (`linkedout_data`, `linkedout_uploads`).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Configuration
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+See [`.env.example`](.env.example) for all variables with explanations.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Key variables:
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_URL` | ✅ | SQLite file path |
+| `JWT_SECRET` | ✅ | Long random string for JWT signing |
+| `ANTHROPIC_API_KEY` | ✅ | For CV optimization |
+| `GOOGLE_SERVICE_ACCOUNT_EMAIL` | Optional | Google Sheets sync |
+| `GOOGLE_SERVICE_ACCOUNT_KEY` | Optional | Google Sheets sync |
+| `GOOGLE_SHEETS_ID` | Optional | Target spreadsheet ID |
+
+---
+
+## Scripts
+
+```bash
+npm run dev           # Development server
+npm run build         # Production build
+npm run start         # Start production server
+npm run lint          # ESLint
+npm test              # Run tests (Vitest)
+npm run test:coverage # Coverage report
+```
+
+---
+
+## Documentation
+
+See the [`DOCS/`](DOCS/) folder for:
+- [Architecture overview](DOCS/architecture.md)
+- [API reference](DOCS/api-reference.md)
+- [Deployment guide](DOCS/deployment.md)
+
+---
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Please read our [Code of Conduct](CODE_OF_CONDUCT.md).
+
+## Security
+
+See [SECURITY.md](SECURITY.md) for the vulnerability disclosure process.
+
+## License
+
+[MIT](LICENSE) — Copyright © 2026 sdurutr436
