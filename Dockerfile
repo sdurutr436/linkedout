@@ -76,9 +76,12 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/app/generated ./app/generated
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
-# Copy full node_modules from builder so prisma CLI has its complete dependency
-# tree at migration time (effect, c12, deepmerge-ts, empathic, mysql2, postgres…)
-COPY --from=builder /app/node_modules ./node_modules
+# JS modules: deps stage has the full production tree (effect, c12, deepmerge-ts,
+# empathic, mysql2, postgres…) installed with npm ci --omit=dev --ignore-scripts.
+COPY --from=deps /app/node_modules ./node_modules
+# Prisma engine binaries are downloaded by postinstall scripts that --ignore-scripts
+# skipped in the deps stage — take them from builder where scripts did run.
+COPY --from=builder /app/node_modules/@prisma/engines ./node_modules/@prisma/engines
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
