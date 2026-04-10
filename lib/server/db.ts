@@ -1,4 +1,4 @@
-import { PrismaClient } from "../../app/generated/prisma";
+import { PrismaClient } from "../../app/generated/prisma/client";
 
 /** Singleton Prisma client — reused across hot-reloads in development. */
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
