@@ -20,7 +20,7 @@ export const GET = handle(async (request: NextRequest, context: unknown) => {
     });
   }
 
-  const { cv } = await CVService.getMarkdown(session.sub, id);
+  const cv = await CVService.getMarkdown(session.sub, id);
   const filename = `cv-${cv.company}-${cv.jobTitle}.md`
     .toLowerCase()
     .replace(/[^a-z0-9.-]/g, "-");

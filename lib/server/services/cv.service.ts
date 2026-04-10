@@ -7,6 +7,12 @@ import logger from "../logger";
 import type { z } from "zod";
 import type { optimizeCVSchema } from "../validation/schemas";
 
+async function findOwned(userId: string, id: string) {
+  const cv = await prisma.optimizedCV.findFirst({ where: { id, userId } });
+  if (!cv) throw new NotFoundError("CV");
+  return cv;
+}
+
 export const CVService = {
   async optimize(userId: string, input: z.infer<typeof optimizeCVSchema>) {
     if (!process.env.ANTHROPIC_API_KEY) {
@@ -38,15 +44,12 @@ export const CVService = {
     });
   },
 
-  async getMarkdown(userId: string, id: string): Promise<{ cv: { content: string; company: string; jobTitle: string } }> {
-    const cv = await prisma.optimizedCV.findFirst({ where: { id, userId } });
-    if (!cv) throw new NotFoundError("CV");
-    return { cv };
+  async getMarkdown(userId: string, id: string) {
+    return findOwned(userId, id);
   },
 
   async getPdf(userId: string, id: string): Promise<{ buffer: Buffer; filename: string }> {
-    const cv = await prisma.optimizedCV.findFirst({ where: { id, userId } });
-    if (!cv) throw new NotFoundError("CV");
+    const cv = await findOwned(userId, id);
 
     logger.info({ userId, cvId: id }, "generating PDF");
     const buffer = await markdownToPdf(cv.content);

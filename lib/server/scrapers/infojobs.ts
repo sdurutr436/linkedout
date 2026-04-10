@@ -1,5 +1,6 @@
-import { chromium, Page } from "playwright";
+import { Page } from "playwright";
 import type { JobListing, ScraperCredentials, SearchParams, JobScraper } from "./types";
+import { launchBrowser } from "./browser";
 
 async function login(page: Page, credentials: ScraperCredentials): Promise<void> {
   await page.goto("https://www.infojobs.net/candidate/login.xhtml", { waitUntil: "domcontentloaded" });
@@ -62,11 +63,7 @@ async function searchJobs(page: Page, params: SearchParams): Promise<JobListing[
 
 class InfojobsScraper implements JobScraper {
   async search(params: SearchParams, credentials: ScraperCredentials): Promise<JobListing[]> {
-    const browser = await chromium.launch({ headless: true });
-    const context = await browser.newContext({
-      userAgent:
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-    });
+    const { browser, context } = await launchBrowser(true);
     const page = await context.newPage();
 
     try {
@@ -78,8 +75,7 @@ class InfojobsScraper implements JobScraper {
   }
 
   async apply(jobUrl: string, credentials: ScraperCredentials, _cvPdfPath: string): Promise<boolean> {
-    const browser = await chromium.launch({ headless: false });
-    const context = await browser.newContext();
+    const { browser, context } = await launchBrowser(false);
     const page = await context.newPage();
 
     try {

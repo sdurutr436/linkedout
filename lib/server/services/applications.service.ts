@@ -1,9 +1,11 @@
 import { prisma } from "../db";
 import { appendRow } from "../sheets/client";
-import { NotFoundError, ForbiddenError } from "../errors";
+import { NotFoundError } from "../errors";
 import logger from "../logger";
 import type { z } from "zod";
 import type { createApplicationSchema, updateApplicationStatusSchema } from "../validation/schemas";
+
+const STATUS_SENT = "enviado";
 
 export const ApplicationsService = {
   async list(userId: string) {
@@ -29,7 +31,7 @@ export const ApplicationsService = {
         contactPerson: input.contactPerson,
         companySummary: input.companySummary,
         optimizedCVId: input.optimizedCVId,
-        status: "enviado",
+        status: STATUS_SENT,
         appliedAt: now,
       },
     });
@@ -48,7 +50,7 @@ export const ApplicationsService = {
         companySummary: input.companySummary ?? "",
         position: input.position,
         salary: input.salary ?? "",
-        status: "enviado",
+        status: STATUS_SENT,
       }).catch((err) => logger.error({ err, applicationId: application.id }, "Google Sheets sync failed"));
     }
 
@@ -56,9 +58,8 @@ export const ApplicationsService = {
   },
 
   async updateStatus(userId: string, id: string, input: z.infer<typeof updateApplicationStatusSchema>) {
-    const existing = await prisma.application.findFirst({ where: { id } });
+    const existing = await prisma.application.findFirst({ where: { id, userId } });
     if (!existing) throw new NotFoundError("Application");
-    if (existing.userId !== userId) throw new ForbiddenError();
 
     const updated = await prisma.application.update({
       where: { id },
@@ -70,9 +71,8 @@ export const ApplicationsService = {
   },
 
   async delete(userId: string, id: string) {
-    const existing = await prisma.application.findFirst({ where: { id } });
+    const existing = await prisma.application.findFirst({ where: { id, userId } });
     if (!existing) throw new NotFoundError("Application");
-    if (existing.userId !== userId) throw new ForbiddenError();
 
     await prisma.application.delete({ where: { id } });
     logger.info({ userId, applicationId: id }, "application deleted");

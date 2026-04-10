@@ -1,5 +1,7 @@
-import { chromium, Page } from "playwright";
+import { Page } from "playwright";
 import type { JobListing, ScraperCredentials, SearchParams, JobScraper } from "./types";
+import { launchBrowser } from "./browser";
+import logger from "../logger";
 
 async function login(page: Page, credentials: ScraperCredentials): Promise<void> {
   await page.goto("https://www.linkedin.com/login", { waitUntil: "networkidle" });
@@ -7,40 +9,6 @@ async function login(page: Page, credentials: ScraperCredentials): Promise<void>
   await page.fill("#password", credentials.password);
   await page.click('[data-litms-control-urn="login-submit"]');
   await page.waitForURL("**/feed/**", { timeout: 15000 });
-}
-
-async function extractJobDetails(page: Page, jobUrl: string): Promise<Partial<JobListing>> {
-  await page.goto(jobUrl, { waitUntil: "domcontentloaded" });
-  await page.waitForTimeout(1500);
-
-  const description = await page
-    .locator(".jobs-description__content, .job-view-layout")
-    .textContent()
-    .catch(() => "");
-
-  const salary = await page
-    .locator(".compensation__salary, .salary")
-    .textContent()
-    .catch(() => undefined);
-
-  const contactPerson = await page
-    .locator(".hirer-card__hirer-information .app-aware-link")
-    .first()
-    .textContent()
-    .catch(() => undefined);
-
-  const isEasyApply = await page
-    .locator(".jobs-apply-button--top-card .jobs-apply-button")
-    .textContent()
-    .then((t) => t?.toLowerCase().includes("easy") ?? false)
-    .catch(() => false);
-
-  return {
-    description: description?.trim() ?? "",
-    salary: salary?.trim(),
-    contactPerson: contactPerson?.trim(),
-    isEasyApply,
-  };
 }
 
 async function searchJobs(page: Page, params: SearchParams): Promise<JobListing[]> {
@@ -98,11 +66,7 @@ async function searchJobs(page: Page, params: SearchParams): Promise<JobListing[
 
 class LinkedInScraper implements JobScraper {
   async search(params: SearchParams, credentials: ScraperCredentials): Promise<JobListing[]> {
-    const browser = await chromium.launch({ headless: true });
-    const context = await browser.newContext({
-      userAgent:
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-    });
+    const { browser, context } = await launchBrowser(true);
     const page = await context.newPage();
 
     try {
@@ -115,8 +79,7 @@ class LinkedInScraper implements JobScraper {
   }
 
   async apply(jobUrl: string, credentials: ScraperCredentials, cvPdfPath: string): Promise<boolean> {
-    const browser = await chromium.launch({ headless: false });
-    const context = await browser.newContext();
+    const { browser, context } = await launchBrowser(false);
     const page = await context.newPage();
 
     try {
@@ -129,7 +92,7 @@ class LinkedInScraper implements JobScraper {
       const btnText = await easyApplyBtn.textContent().catch(() => "");
       if (!btnText?.toLowerCase().includes("easy")) {
         // External application portal — skip per product spec
-        console.log("Oferta redirige a portal externo — omitida");
+        logger.info({ jobUrl }, "offer redirects to external portal — skipped");
         return false;
       }
 
