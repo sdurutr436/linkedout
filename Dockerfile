@@ -1,5 +1,5 @@
 # ─── Stage 1: deps ───────────────────────────────────────────────────────────
-FROM node:22-slim AS deps
+FROM node:25-slim AS deps
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -16,7 +16,7 @@ RUN npm ci --omit=dev --ignore-scripts
 RUN npx playwright install chromium --with-deps
 
 # ─── Stage 2: builder ─────────────────────────────────────────────────────────
-FROM node:22-slim AS builder
+FROM node:25-slim AS builder
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -49,7 +49,7 @@ ENV DATABASE_URL="file:/data/dev.db"
 RUN npm run build
 
 # ─── Stage 3: runner ──────────────────────────────────────────────────────────
-FROM node:22-slim AS runner
+FROM node:25-slim AS runner
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
