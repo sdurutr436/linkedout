@@ -16,9 +16,7 @@ export default function LoginPage() {
 
     const endpoint = tab === "login" ? "/api/auth/login" : "/api/auth/register";
     const body =
-      tab === "login"
-        ? { email: form.email, password: form.password }
-        : form;
+      tab === "login" ? { email: form.email, password: form.password } : form;
 
     const res = await fetch(endpoint, {
       method: "POST",
@@ -39,34 +37,48 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950">
-      <div className="w-full max-w-md bg-slate-900 rounded-2xl shadow-2xl border border-slate-800 p-8">
-        <div className="flex items-center gap-3 mb-8">
-          <span className="text-3xl font-black text-blue-500">Linked</span>
-          <span className="text-3xl font-black text-white">Out</span>
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="w-full max-w-sm bg-surface-container-low border border-outline-variant/30 p-8">
+
+        {/* Header */}
+        <div className="mb-8">
+          <div className="font-headline text-2xl font-bold tracking-wider">
+            <span className="text-primary-container">LINKED</span>
+            <span className="text-on-surface">OUT</span>
+            <span className="text-primary-container">_</span>
+            <span className="text-secondary text-lg">CORE</span>
+          </div>
+          <div className="font-label text-[10px] text-secondary/50 uppercase tracking-widest mt-1">
+            Authentication required
+          </div>
         </div>
 
-        <div className="flex gap-1 mb-6 bg-slate-800 rounded-lg p-1">
-          <button
-            className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${tab === "login" ? "bg-blue-600 text-white" : "text-slate-400 hover:text-white"}`}
-            onClick={() => { setTab("login"); setError(""); }}
-          >
-            Iniciar sesión
-          </button>
-          <button
-            className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${tab === "register" ? "bg-blue-600 text-white" : "text-slate-400 hover:text-white"}`}
-            onClick={() => { setTab("register"); setError(""); }}
-          >
-            Registrarse
-          </button>
+        {/* Tab toggle */}
+        <div className="flex border border-outline-variant/30 mb-6">
+          {(["login", "register"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => { setTab(t); setError(""); }}
+              className={[
+                "flex-1 py-2 font-headline text-xs font-bold uppercase tracking-wider transition-colors",
+                tab === t
+                  ? "bg-primary-container text-on-primary-container"
+                  : "bg-surface-container text-secondary hover:bg-surface-container-high",
+              ].join(" ")}
+            >
+              {t === "login" ? "LOGIN" : "REGISTER"}
+            </button>
+          ))}
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {tab === "register" && (
             <div>
-              <label className="block text-sm text-slate-400 mb-1">Nombre</label>
+              <label className="block font-label text-[10px] text-secondary/70 uppercase tracking-wider mb-1.5">
+                IDENTIFIER
+              </label>
               <input
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                className="w-full bg-surface-container border border-outline-variant/40 font-body text-sm text-on-surface px-4 py-2.5 focus:outline-none focus:border-primary-container transition-colors placeholder:text-secondary/30"
                 placeholder="Tu nombre"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -74,22 +86,28 @@ export default function LoginPage() {
               />
             </div>
           )}
+
           <div>
-            <label className="block text-sm text-slate-400 mb-1">Email</label>
+            <label className="block font-label text-[10px] text-secondary/70 uppercase tracking-wider mb-1.5">
+              EMAIL_ADDR
+            </label>
             <input
               type="email"
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+              className="w-full bg-surface-container border border-outline-variant/40 font-body text-sm text-on-surface px-4 py-2.5 focus:outline-none focus:border-primary-container transition-colors placeholder:text-secondary/30"
               placeholder="tu@email.com"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
               required
             />
           </div>
+
           <div>
-            <label className="block text-sm text-slate-400 mb-1">Contraseña</label>
+            <label className="block font-label text-[10px] text-secondary/70 uppercase tracking-wider mb-1.5">
+              AUTH_KEY
+            </label>
             <input
               type="password"
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+              className="w-full bg-surface-container border border-outline-variant/40 font-body text-sm text-on-surface px-4 py-2.5 focus:outline-none focus:border-primary-container transition-colors placeholder:text-secondary/30"
               placeholder="••••••••"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
@@ -98,19 +116,31 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <p className="text-red-400 text-sm bg-red-950 border border-red-800 rounded-lg px-3 py-2">
-              {error}
-            </p>
+            <div
+              role="alert"
+              className="bg-error-container/20 border border-error-container/50 text-error font-label text-xs px-4 py-2.5"
+            >
+              ERR: {error}
+            </div>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-semibold py-2.5 rounded-lg transition-colors"
+            className="w-full bg-primary-container text-on-primary-container font-headline text-xs font-bold py-3 uppercase tracking-wider hover:bg-primary-fixed disabled:opacity-50 transition-colors mt-2"
           >
-            {loading ? "Cargando..." : tab === "login" ? "Entrar" : "Crear cuenta"}
+            {loading
+              ? "AUTHENTICATING..."
+              : tab === "login"
+              ? "AUTHENTICATE"
+              : "CREATE_ACCOUNT"}
           </button>
         </form>
+
+        <div className="mt-6 pt-4 border-t border-outline-variant/20 flex items-center gap-2">
+          <span className="w-1.5 h-1.5 bg-primary-container rounded-full" aria-hidden="true" />
+          <span className="font-label text-[9px] text-primary-container uppercase">SYS_ONLINE</span>
+        </div>
       </div>
     </div>
   );
