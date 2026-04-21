@@ -47,7 +47,6 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [showLinkedinPw, setShowLinkedinPw] = useState(false);
-  const [showInfojobsPw, setShowInfojobsPw] = useState(false);
   const [tab, setTab] = useState<"cv" | "preferences">("cv");
 
   useEffect(() => {
@@ -81,7 +80,7 @@ export default function ProfilePage() {
 
   async function handleSave() {
     setSaving(true);
-    const { infojobsConnected, ...payload } = form;
+    const { infojobsConnected: _infojobsConnected, ...payload } = form;
     await fetch("/api/profile", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -177,7 +176,7 @@ export default function ProfilePage() {
                   </span>
                   <div className="h-3 w-px bg-outline-variant/30" aria-hidden="true" />
                   <span className="font-headline text-[10px] text-primary-container">
-                    L: {cvLines.length.toString().padStart(3, "0")} // UTF-8
+                    L: {cvLines.length.toString().padStart(3, "0")} {"// "}UTF-8
                   </span>
                 </div>
                 <div className="flex items-center gap-2">

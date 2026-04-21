@@ -70,6 +70,7 @@ export default function KeywordsSelect({ value, onChange, placeholder = "KEYWORD
       <div
         role="combobox"
         aria-expanded={open}
+        aria-controls="keywords-listbox"
         aria-haspopup="listbox"
         tabIndex={0}
         className="w-full min-h-[36px] bg-surface-container border border-outline-variant/40 px-3 py-1.5 flex flex-wrap gap-1.5 items-center cursor-pointer focus:outline-none focus:border-primary-container transition-colors"
@@ -103,6 +104,7 @@ export default function KeywordsSelect({ value, onChange, placeholder = "KEYWORD
       {/* Dropdown */}
       {open && (
         <div
+          id="keywords-listbox"
           role="listbox"
           aria-multiselectable="true"
           className="absolute z-50 top-full left-0 right-0 bg-surface-container-low border border-outline-variant/40 border-t-0 max-h-52 flex flex-col"

@@ -34,7 +34,7 @@ export default async function DashboardPage() {
           DASHBOARD_CORE
         </h1>
         <p className="font-label text-xs text-primary-container mt-1 tracking-[0.2em]">
-          OPERATOR: {session!.name.toUpperCase()} // STATUS: ONLINE
+          OPERATOR: {session!.name.toUpperCase()} {"// "}STATUS: ONLINE
         </p>
       </header>
 
