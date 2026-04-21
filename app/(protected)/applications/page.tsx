@@ -409,7 +409,7 @@ export default function ApplicationsPage() {
             </p>
             <p>
               <span className="text-primary-container">[INFO]</span>{" "}
-              FILTER_ACTIVE: {filterStatus.toUpperCase()} // {filterPlatform.toUpperCase()}
+              FILTER_ACTIVE: {filterStatus.toUpperCase()} {"// "}{filterPlatform.toUpperCase()}
             </p>
             <p>
               <span className={stats.total > 0 ? "text-primary-container" : "text-secondary/40"}>
