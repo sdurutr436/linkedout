@@ -20,7 +20,7 @@
     "@types/marked": "^5.0.2",
     "@types/pino": "^7.0.4",
     "bcryptjs": "^3.0.3",
-    "choices.js": "^11.2.1",
+    "choices.js": "^11.2.2",
     "googleapis": "^171.4.0",
     "jose": "^6.2.2",
     "marked": "^18.0.0",
