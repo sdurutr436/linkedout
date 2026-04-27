@@ -23,7 +23,7 @@
     "choices.js": "^11.2.1",
     "googleapis": "^171.4.0",
     "jose": "^6.2.2",
-    "marked": "^18.0.0",
+    "marked": "^18.0.2",
     "next": "16.2.3",
     "pino": "^10.3.1",
     "pino-pretty": "^13.1.3",
